@@ -1,4 +1,4 @@
-# Windows image file caches
+﻿# Windows image file caches
 Thumbs.db
 ehthumbs.db
 
@@ -50,3 +50,5 @@ Temporary Items
 *.zip
 ~$记录.docx
 ~$table_structure.xlsx
+*.pickle
+*.pyc
