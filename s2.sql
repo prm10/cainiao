@@ -81,19 +81,19 @@ create table config(
 --import data
 load data local infile 'E:/github/cainiao/data/item_feature1.csv' into table item_feature fields terminated by ','
 enclosed by '"'
-lines terminated by '\n'
+lines terminated by '\r\n'
 (ds,item_id,cate_id,cate_level_id,brand_id,supplier_id,pv_ipv,pv_uv,cart_ipv,cart_uv,collect_uv,num_gmv,amt_gmv,qty_gmv,unum_gmv,amt_alipay,num_alipay,qty_alipay,unum_alipay,ztc_pv_ipv,tbk_pv_ipv,ss_pv_ipv,jhs_pv_ipv,ztc_pv_uv,tbk_pv_uv,ss_pv_uv,jhs_pv_uv,num_alipay_njhs,amt_alipay_njhs,qty_alipay_njhs,unum_alipay_njhs)
 ;
 
 load data local infile 'E:/github/cainiao/data/item_store_feature1.csv' into table item_store_feature fields terminated by ','
 enclosed by '"'
-lines terminated by '\n'
+lines terminated by '\r\n'
 (ds,item_id,store_code,cate_id,cate_level_id,brand_id,supplier_id,pv_ipv,pv_uv,cart_ipv,cart_uv,collect_uv,num_gmv,amt_gmv,qty_gmv,unum_gmv,amt_alipay,num_alipay,qty_alipay,unum_alipay,ztc_pv_ipv,tbk_pv_ipv,ss_pv_ipv,jhs_pv_ipv,ztc_pv_uv,tbk_pv_uv,ss_pv_uv,jhs_pv_uv,num_alipay_njhs,amt_alipay_njhs,qty_alipay_njhs,unum_alipay_njhs)
 ;
 
 load data local infile 'E:/github/cainiao/data/config1.csv' into table config fields terminated by ','
 enclosed by '"'
-lines terminated by '\n'
+lines terminated by '\r\n'
 (item_id,store_code,a_b)
 ;
 

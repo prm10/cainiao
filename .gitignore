@@ -52,3 +52,4 @@ Temporary Items
 ~$table_structure.xlsx
 *.pickle
 *.pyc
+*.iml
