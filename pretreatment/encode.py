@@ -12,6 +12,8 @@ class EncodeClass:
         # item, category, level 1 category, brand, supplier
         self.item_dict = {}
         self.item_list = []
+        self.store_dict = {}
+        self.store_list = []
         self.cate_dict = {}
         self.cate_list = []
         self.cate1_dict = {}
@@ -23,23 +25,26 @@ class EncodeClass:
 
     def encode(self):
         itt = {}
+        stot = {}
         cat = {}
         cat1 = {}
         brt = {}
         supt = {}
 
-        # i0 = 0
-        reader = csv.reader(open("data/item_feature1.csv"))
+        reader = csv.reader(open("data/item_store_feature1.csv"))
         for record in reader:
             target = long(float(record[29]))
             item_id = record[1]
-            cate_id = record[2]
-            cate1_id = record[3]
-            brand_id = record[4]
-            supplier_id = record[5]
+            store_id = record[2]
+            cate_id = record[3]
+            cate1_id = record[4]
+            brand_id = record[5]
+            supplier_id = record[6]
 
             itt.setdefault(item_id, 0L)
             itt[item_id] += target
+            stot.setdefault(store_id, 0L)
+            stot[store_id] += target
             cat.setdefault(cate_id, 0L)
             cat[cate_id] += target
             cat1.setdefault(cate1_id, 0L)
@@ -49,14 +54,12 @@ class EncodeClass:
             supt.setdefault(supplier_id, 0L)
             supt[supplier_id] += target
 
-            # i0 += 1
-            # if i0 > 10:
-            #     break
         print 'statistic result: '
-        print 'item:\t%d\r\ncategory:\t%d\r\ncategory1:\t%d\r\nbrand:\t%d\r\nsupplier:\t%d\r\n' %(len(itt), len(
-            cat), len(cat1), len(brt), len(supt))
+        print 'item:\t%d\r\nstore:\t%d\r\ncategory:\t%d\r\ncategory1:\t%d\r\nbrand:\t%d\r\nsupplier:\t%d\r\n' % (
+            len(itt), len(stot), len(cat), len(cat1), len(brt), len(supt))
         # 按频数降序排列
         self.item_list = [k for k, v in sorted(itt.iteritems(), key=lambda d: d[1], reverse=True)]
+        self.store_list = [k for k, v in sorted(stot.iteritems(), key=lambda d: d[1], reverse=True)]
         self.cate_list = [k for k, v in sorted(cat.iteritems(), key=lambda d: d[1], reverse=True)]
         self.cate1_list = [k for k, v in sorted(cat1.iteritems(), key=lambda d: d[1], reverse=True)]
         self.brand_list = [k for k, v in sorted(brt.iteritems(), key=lambda d: d[1], reverse=True)]
@@ -65,6 +68,9 @@ class EncodeClass:
         self.item_dict = dict.fromkeys(self.item_list, 0)
         for i in range(len(self.item_list)):
             self.item_dict[self.item_list[i]] = i
+        self.store_dict = dict.fromkeys(self.store_list, 0)
+        for i in range(len(self.store_list)):
+            self.store_dict[self.store_list[i]] = i
         self.cate_dict = dict.fromkeys(self.cate_list, 0)
         for i in range(len(self.cate_list)):
             self.cate_dict[self.cate_list[i]] = i
@@ -80,6 +86,8 @@ class EncodeClass:
 
         self.save_pickle('item_list')
         self.save_pickle('item_dict')
+        self.save_pickle('store_list')
+        self.save_pickle('store_dict')
         self.save_pickle('cate_list')
         self.save_pickle('cate_dict')
         self.save_pickle('cate1_list')
@@ -92,6 +100,8 @@ class EncodeClass:
     def load_all(self):
         self.load_pickle('item_list')
         self.load_pickle('item_dict')
+        self.load_pickle('store_list')
+        self.load_pickle('store_dict')
         self.load_pickle('cate_list')
         self.load_pickle('cate_dict')
         self.load_pickle('cate1_list')

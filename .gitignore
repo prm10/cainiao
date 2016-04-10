@@ -52,4 +52,8 @@ Temporary Items
 ~$table_structure.xlsx
 *.pickle
 *.pyc
+<<<<<<< HEAD
 *.iml
+=======
+*.xml
+>>>>>>> origin/master
