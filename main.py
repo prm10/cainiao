@@ -3,6 +3,6 @@ __author__ = 'prm14'
 
 from pretreatment import encode
 
-ec=encode.EncodeClass()
-ec.encode()
+ec = encode.EncodeClass()
+# ec.encode()
 ec.load_all()
