@@ -33,7 +33,7 @@ class EncodeClass:
 
         reader = csv.reader(open("data/item_store_feature1.csv"))
         for record in reader:
-            target = long(float(record[29]))
+            target = long(float(record[30]))
             item_id = record[1]
             store_id = record[2]
             cate_id = record[3]
@@ -41,17 +41,17 @@ class EncodeClass:
             brand_id = record[5]
             supplier_id = record[6]
 
-            itt.setdefault(item_id, 0L)
+            itt.setdefault(item_id, 0.0)
             itt[item_id] += target
-            stot.setdefault(store_id, 0L)
+            stot.setdefault(store_id, 0.0)
             stot[store_id] += target
-            cat.setdefault(cate_id, 0L)
+            cat.setdefault(cate_id, 0.0)
             cat[cate_id] += target
-            cat1.setdefault(cate1_id, 0L)
+            cat1.setdefault(cate1_id, 0.0)
             cat1[cate1_id] += target
-            brt.setdefault(brand_id, 0L)
+            brt.setdefault(brand_id, 0.0)
             brt[brand_id] += target
-            supt.setdefault(supplier_id, 0L)
+            supt.setdefault(supplier_id, 0.0)
             supt[supplier_id] += target
 
         print 'statistic result: '

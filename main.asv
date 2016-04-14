@@ -1,0 +1,13 @@
+clc;close all;clear;
+load('data/item_store_feature.mat');
+load('data/item_feature.mat');
+load('data/config.mat');
+%% statistic of item each day
+dt_item_target=zeros(444,1000);
+for i1=1:size(item_feature,1)
+    x1=item_feature(i1,1);
+    x2=item_feature(i1,2);
+    dt_item_target(x1,x2)=dt_item_target(x1,x2)+item_feature(i1,end-2);
+end
+
+plot(sum(dt_item_target,2))

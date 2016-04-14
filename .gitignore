@@ -58,3 +58,4 @@ Temporary Items
 *.xml
 >>>>>>> origin/master
 .Rproj.user
+*.mat
