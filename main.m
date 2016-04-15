@@ -32,12 +32,20 @@ for i1=1:size(item_store_feature,1)
     item_dt_target(x1,x2,x3)=item_dt_target(x1,x2,x3)+item_store_feature(i1,end-1);
 end
 %% inspect data
-%{
+%
 s=sum(item_dt_target(:,:,1),2);
+figure;
 plot(s);
 all_vs_branch=sum(sum((item_dt_target(:,:,1)-sum(item_dt_target(:,:,2:end),3)).^2));
-% plot(dt_item_target(:,5));
+figure;
+plot(item_dt_target(7,:,1));
 %}
 %% body
+train_x_idx=1:399;
+train_y_idx=400:413;
+test_x_idx=32:430;
+test_y_idx=431:444;
 
+train_y=squeeze(sum(item_dt_target(:,train_y,:),2));
+test_y=squeeze(sum(item_dt_target(:,test_y_idx,:),2));
 
