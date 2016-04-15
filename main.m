@@ -38,7 +38,7 @@ figure;
 plot(s);
 all_vs_branch=sum(sum((item_dt_target(:,:,1)-sum(item_dt_target(:,:,2:end),3)).^2));
 figure;
-plot(item_dt_target(7,:,1));
+plot(item_dt_target(117,:,1));
 %}
 %% body
 train_x_idx=1:399;
@@ -46,6 +46,6 @@ train_y_idx=400:413;
 test_x_idx=32:430;
 test_y_idx=431:444;
 
-train_y=squeeze(sum(item_dt_target(:,train_y,:),2));
+train_y=squeeze(sum(item_dt_target(:,train_y_idx,:),2));
 test_y=squeeze(sum(item_dt_target(:,test_y_idx,:),2));
 
