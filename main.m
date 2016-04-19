@@ -123,7 +123,7 @@ plot(1:size(data2,1),data2);
 %{
 filter_window=3; %中位数滤波窗口
 m=20; % 模型阶次
-i1=3; %样本点
+i1=13; %样本点
 store_idx=1; %仓库
 
 x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
@@ -169,6 +169,7 @@ filter_window    m    train    test
       1          20   153.43   159.43
       1          10   209.20   151.88
 %}
+top_k_arma=100;
 predict_arma_train=zeros(1000,6);
 predict_arma_test=zeros(1000,6);
 filter_window=3; %中位数滤波窗口
@@ -178,8 +179,8 @@ x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
 x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
 wb=waitbar(0,'进度: 0%');
 tic;
-for i1=1:1000 %样本点
-    waitbar(i1/1000,wb,strcat('进度: ',num2str(i1/10),'%'));
+for i1=1:top_k_arma %样本点
+    waitbar(i1/top_k_arma,wb,strcat('进度: ',num2str(i1/top_k_arma*100),'%'));
     for store_idx=1:6 %仓库
         %train
         y=x_mf_train(i1,:,store_idx)';
@@ -213,10 +214,12 @@ for i1=1:1000 %样本点
 end
 toc;
 close(wb);
+predict_arma_train(top_k_arma+1:1000,:)=predict_median_train(top_k_arma+1:1000,:);
+predict_arma_test(top_k_arma+1:1000,:)=predict_median_test(top_k_arma+1:1000,:);
 score_arma_train=calculate_score(predict_arma_train,y_train,config_a,config_b)/scatter;
 score_arma_test=calculate_score(predict_arma_test,y_test,config_a,config_b)/scatter;
 %% 融合两种结果：
-lambda=0.8;
+lambda=0.9;
 predict_esemble_train=lambda*predict_median_train+(1-lambda)*predict_arma_train;
 predict_esemble_test=lambda*predict_median_test+(1-lambda)*predict_arma_test;
 score_esemble_train=calculate_score(predict_esemble_train,y_train,config_a,config_b)/scatter;
