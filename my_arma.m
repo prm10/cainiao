@@ -14,9 +14,9 @@ L 每次循环的模型误差
 %}
 % parameters:
 loops=1e3;
-lr=3e-2;
+lr=1e-1;
 lambda=1e-3;  %regularization
-max_g=2e-1;
+max_g=1;
 % data process
 y=max(y0,ones(size(y0)));
 scatter=max(1,mean(y0));
@@ -26,7 +26,7 @@ bias=10/scatter;
 N=length(y);
 batch=N-n-m+1;
 
-% theta_history=zeros(loops,m);
+theta_history=zeros(loops,m);
 L=zeros(loops,1);
 
 for i1=1:loops
@@ -38,13 +38,13 @@ for i1=1:loops
     T=y(i2+m+1:i2+m+n);
     S=my_predict(theta,bias,n,y1);
     [grad_theta,grad_bias,L(i1)]=my_gradient(S,T,y1,theta);
-    theta=theta-lr*(lambda*theta+clump(grad_theta,max_g));
-    bias=bias-lr*(lambda*bias+clump(grad_bias,max_g));
-%     theta_history(i1,:)=theta;
+    theta=theta-lr*clump((lambda*theta+grad_theta),max_g);
+    bias=bias-lr*clump((lambda*bias+grad_bias),max_g);
+    theta_history(i1,:)=theta;
 end
 bias=bias*scatter; % scatter the parameters back
 y1=y0(batch:batch-1+m);
 S=my_predict(theta,bias,n,y1);
 
-% figure;
-% plot(theta_history);
+figure;
+plot(theta_history);

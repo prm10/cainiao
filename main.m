@@ -104,10 +104,6 @@ subplot(212);
 plot(last_k,score_median_k_test,'--*');
 title('test');xlabel('last k day');ylabel('cost');grid;
 %}
-%% 一年前的今天乘以一定的比例系数作为今天的预测（适用的item有限）
-
-
-
 %% 尝试 median filter
 %{
 data1=item_dt_target(3,:,1)';
@@ -119,7 +115,7 @@ subplot(212);
 plot(1:size(data2,1),data2);
 % plot(1:size(data1,1),data1,1:size(data1,1),data2);
 %}
-%% 先中值滤波，再对最近m天销量自回归，n步预测值求和作为预测
+%% 先中值滤波，再对全年销量自回归，n步预测值求和作为预测
 %{
 filter_window=3; %中位数滤波窗口
 m=20; % 模型阶次
@@ -153,6 +149,33 @@ figure;
 plot(x_idx_test(begin_idx_test(i1):end),y,y_idx_test,item_dt_target(i1,y_idx_test,store_idx),y_idx_test,p);
 legend('x','y','predict');
 %}
+%% 先中值滤波，再对最近m天销量自回归，n步预测值求和作为预测
+%
+filter_window=3; %中位数滤波窗口
+m=40; % 模型阶次
+i1=3; %样本点
+store_idx=1; %仓库
+n=length(y_idx_train);
+
+x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
+y=[x_mf_train(i1,end-m+1:end,store_idx)';item_dt_target(i1,y_idx_train,store_idx)'];
+[theta,bias,~,L]=my_arma(y,m,n);
+p=my_predict(theta,bias,n,x_mf_train(i1,end-m+1:end,store_idx)');
+figure;plot(L);
+figure;
+plot(x_idx_train(end-m+1:end),x_mf_train(i1,end-m+1:end,store_idx),...
+    y_idx_train,item_dt_target(i1,y_idx_train,store_idx),...
+    y_idx_train,p);
+legend('x','y','predict');
+
+x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
+p=my_predict(theta,bias,n,x_mf_test(i1,end-m+1:end,store_idx)');
+figure;
+plot(x_idx_test(end-m+1:end),x_mf_test(i1,end-m+1:end,store_idx),...
+    y_idx_test,item_dt_target(i1,y_idx_test,store_idx),...
+    y_idx_test,p);
+legend('x','y','predict');
+%}
 %% 比较不同模型在各个维度上的预测误差：item、begin_time、store_id、brand、supplier
 % 前8天中值滤波
 last_k=8;
@@ -160,6 +183,7 @@ predict_median_train=squeeze(median(x_train(:,end-last_k+1:end,:),2))*length(y_i
 predict_median_test=squeeze(median(x_test(:,end-last_k+1:end,:),2))*length(y_idx_test);
 score_median_train=calculate_score(predict_median_train,y_train,config_a,config_b)/scatter;
 score_median_test=calculate_score(predict_median_test,y_test,config_a,config_b)/scatter;
+
 
 % 先中值滤波，再对最近m天销量自回归，n步预测值求和作为预测
 %{
@@ -177,6 +201,7 @@ m=20; % 模型阶次
 n=length(y_idx_train); % n步预测
 x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
 x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
+%
 wb=waitbar(0,'进度: 0%');
 tic;
 for i1=1:top_k_arma %样本点
@@ -241,6 +266,49 @@ subplot(212);
 plot(idx,sum(cost_median_test,2),idx,sum(cost_arma_test,2));
 legend('median','arma');
 title('test');xlabel('item');ylabel('cost');
+%}
+%% 考察周期性
+item=1;
+store=6;
+data=item_dt_target(item,:,store);
+figure;
+plot(data);
+last_k=10;
+lambda=0.3;
+%% 一年前的今天乘以一定的比例系数作为今天的预测（适用的item有限）
+% 找出去年有售的item
+select_train=repmat(begin_idx_train<=(length(x_idx_train)-364-last_k),1,6);
+% 去年target销量/去年target前k天销量*今年target前k天销量
+x_idx_period=(1-last_k:0)+length(x_idx_train)-365;
+y_idx_period=(1:length(y_idx_train))+length(x_idx_train)-365;
+x_idx_recent=(1-last_k:0)+length(x_idx_train);
+predict_period_train=...
+    squeeze(sum(x_mf_train(:,y_idx_period,:),2))./...
+    squeeze(mean(x_mf_train(:,x_idx_period,:),2)).*...
+    squeeze(mean(x_mf_train(:,x_idx_recent,:),2));
+temp=sum(predict_period_train,2);
+predict_period_train(isnan(temp)|isinf(temp),:)=0;
+select_train(isnan(temp)|isinf(temp))=false;
+predict_esemble_train=lambda*predict_median_train+...
+    (1-lambda)*(predict_period_train.*select_train+predict_median_train.*(~select_train));
+score_esemble_train=calculate_score(predict_esemble_train,y_train,config_a,config_b)/scatter;
+
+% 找出去年有售的item
+select_test=repmat(begin_idx_test<=(length(x_idx_test)-364-last_k),1,6);
+% 去年target销量/去年target前k天销量*今年target前k天销量
+x_idx_period=(1-last_k:0)+length(x_idx_test)-365;
+y_idx_period=(1:length(y_idx_test))+length(x_idx_test)-365;
+x_idx_recent=(1-last_k:0)+length(x_idx_test);
+predict_period_test=...
+    squeeze(sum(x_mf_test(:,y_idx_period,:),2))./...
+    squeeze(mean(x_mf_test(:,x_idx_period,:),2)).*...
+    squeeze(mean(x_mf_test(:,x_idx_recent,:),2));
+temp=sum(predict_period_test,2);
+predict_period_test(isnan(temp)|isinf(temp),:)=0;
+select_test(isnan(temp)|isinf(temp))=false;
+predict_esemble_test=lambda*predict_median_test+...
+    (1-lambda)*(predict_period_test.*select_test+predict_median_test.*(~select_test));
+score_esemble_test=calculate_score(predict_esemble_test,y_test,config_a,config_b)/scatter;
 
 
 
