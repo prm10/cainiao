@@ -208,19 +208,9 @@ for i1=1:top_k_arma %样本点
     waitbar(i1/top_k_arma,wb,strcat('进度: ',num2str(i1/top_k_arma*100),'%'));
     for store_idx=1:6 %仓库
         %train
-        y=x_mf_train(i1,:,store_idx)';
-        y=y(begin_idx_train(i1):end);% start from nonzero index
-        if(length(y)>m+n)
-            [theta,bias,~,~]=my_arma(y,m,n);
-            p=my_predict(theta,bias,n,y(end-m+1:end));
-            predict_arma_train(i1,store_idx)=sum(p);
-        else
-            if ~isempty(y)
-                predict_arma_train(i1,store_idx)=median(y);
-            else
-                predict_arma_train(i1,store_idx)=0;
-            end
-        end
+        y=[x_mf_train(i1,end-m+1:end,store_idx)';item_dt_target(i1,y_idx_train,store_idx)'];
+        [theta,bias,~,L]=my_arma(y,m,n);
+        p=my_predict(theta,bias,n,x_mf_train(i1,end-m+1:end,store_idx)');
         %test
         y=x_mf_test(i1,:,store_idx)';
         y=y(begin_idx_test(i1):end);% start from nonzero index

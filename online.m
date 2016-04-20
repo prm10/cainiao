@@ -122,6 +122,6 @@ legend('x','y','predict');
 % legend('x','y','predict');
 %}
 %% on-line predict
-last_k=15;
+last_k=10;
 predict=squeeze(median(item_dt_target(:,end-last_k+1:end,:),2))*14;
 save('data/predict.mat','predict');
