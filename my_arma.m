@@ -25,9 +25,9 @@ theta=normrnd(0,0.01,[m,1]);%zeros(m+1,1);
 bias=10/scatter;
 N=length(y);
 batch=N-n-m+1;
-
-theta_history=zeros(loops,m);
 L=zeros(loops,1);
+
+% theta_history=zeros(loops,m);
 
 for i1=1:loops
 %     if mod(i1,500)==0
@@ -40,11 +40,11 @@ for i1=1:loops
     [grad_theta,grad_bias,L(i1)]=my_gradient(S,T,y1,theta);
     theta=theta-lr*clump((lambda*theta+grad_theta),max_g);
     bias=bias-lr*clump((lambda*bias+grad_bias),max_g);
-    theta_history(i1,:)=theta;
+%     theta_history(i1,:)=theta;
 end
 bias=bias*scatter; % scatter the parameters back
 y1=y0(batch:batch-1+m);
 S=my_predict(theta,bias,n,y1);
 
-figure;
-plot(theta_history);
+% figure;
+% plot(theta_history);

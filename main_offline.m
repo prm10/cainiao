@@ -50,14 +50,11 @@ y_idx_train=431:437;
 x_idx_test=8:437;
 y_idx_test=438:444;
 
-% x_idx_test=x_idx_test-5;
-% y_idx_test=y_idx_test-5;
-
 x_train=item_dt_target(:,x_idx_train,:);
 y_train=squeeze(sum(item_dt_target(:,y_idx_train,:),2));
 x_test=item_dt_target(:,x_idx_test,:);
 y_test=squeeze(sum(item_dt_target(:,y_idx_test,:),2));
-scatter=1e4;
+scale=1e4;
 % first time
 begin_idx_train=zeros(1000,1);
 for i1=1:1000
@@ -81,9 +78,9 @@ score_median_k_train=zeros(length(last_k),1);
 score_median_k_test=zeros(length(last_k),1);
 for i1=1:length(last_k)
     predict_train=squeeze(median(item_dt_target(:,x_idx_train(end-last_k(i1)+1:end),:),2))*length(y_idx_train);
-    score_median_k_train(i1,1)=calculate_score(predict_train,y_train,config_a,config_b)/scatter;
+    score_median_k_train(i1,1)=calculate_score(predict_train,y_train,config_a,config_b)/scale;
     predict_test=squeeze(median(item_dt_target(:,x_idx_test(end-last_k(i1)+1:end),:),2))*length(y_idx_test);
-    score_median_k_test(i1,1)=calculate_score(predict_test,y_test,config_a,config_b)/scatter;
+    score_median_k_test(i1,1)=calculate_score(predict_test,y_test,config_a,config_b)/scale;
 end
 
 %均值
@@ -92,9 +89,9 @@ end
 % score_median_k_test=zeros(length(last_k),1);
 % for i1=1:length(last_k)
 %     predict_train=squeeze(mean(item_dt_target(:,x_idx_train(end-last_k(i1)+1:end),:),2))*length(y_idx_train);
-%     score_median_k_train(i1,1)=calculate_score(predict_train,y_train,config_a,config_b)/scatter;
+%     score_median_k_train(i1,1)=calculate_score(predict_train,y_train,config_a,config_b)/scale;
 %     predict_test=squeeze(mean(item_dt_target(:,x_idx_test(end-last_k(i1)+1:end),:),2))*length(y_idx_test);
-%     score_median_k_test(i1,1)=calculate_score(predict_test,y_test,config_a,config_b)/scatter;
+%     score_median_k_test(i1,1)=calculate_score(predict_test,y_test,config_a,config_b)/scale;
 % end
 figure;
 subplot(211);
@@ -105,8 +102,8 @@ plot(last_k,score_median_k_test,'--*');
 title('test');xlabel('last k day');ylabel('cost');grid;
 %}
 %% 尝试 median filter
-%{
-data1=item_dt_target(3,:,1)';
+%
+data1=item_dt_target(1,:,1)';
 data2=medfilt1(data1,3);
 figure;
 subplot(211);
@@ -150,7 +147,7 @@ plot(x_idx_test(begin_idx_test(i1):end),y,y_idx_test,item_dt_target(i1,y_idx_tes
 legend('x','y','predict');
 %}
 %% 先中值滤波，再对最近m天销量自回归，n步预测值求和作为预测
-%
+%{
 filter_window=3; %中位数滤波窗口
 m=40; % 模型阶次
 i1=3; %样本点
@@ -181,8 +178,8 @@ legend('x','y','predict');
 last_k=8;
 predict_median_train=squeeze(median(x_train(:,end-last_k+1:end,:),2))*length(y_idx_train);
 predict_median_test=squeeze(median(x_test(:,end-last_k+1:end,:),2))*length(y_idx_test);
-score_median_train=calculate_score(predict_median_train,y_train,config_a,config_b)/scatter;
-score_median_test=calculate_score(predict_median_test,y_test,config_a,config_b)/scatter;
+score_median_train=calculate_score(predict_median_train,y_train,config_a,config_b)/scale;
+score_median_test=calculate_score(predict_median_test,y_test,config_a,config_b)/scale;
 
 
 % 先中值滤波，再对最近m天销量自回归，n步预测值求和作为预测
@@ -193,11 +190,11 @@ filter_window    m    train    test
       1          20   153.43   159.43
       1          10   209.20   151.88
 %}
-top_k_arma=100;
+top_k_arma=200;
 predict_arma_train=zeros(1000,6);
 predict_arma_test=zeros(1000,6);
 filter_window=3; %中位数滤波窗口
-m=20; % 模型阶次
+m=30; % 模型阶次
 n=length(y_idx_train); % n步预测
 x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
 x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
@@ -209,42 +206,31 @@ for i1=1:top_k_arma %样本点
     for store_idx=1:6 %仓库
         %train
         y=[x_mf_train(i1,end-m+1:end,store_idx)';item_dt_target(i1,y_idx_train,store_idx)'];
-        [theta,bias,~,L]=my_arma(y,m,n);
-        p=my_predict(theta,bias,n,x_mf_train(i1,end-m+1:end,store_idx)');
+        [theta,bias,~,~]=my_arma(y,m,n);
+%         p=my_predict(theta,bias,n,x_mf_train(i1,end-m+1:end,store_idx)');
         %test
-        y=x_mf_test(i1,:,store_idx)';
-        y=y(begin_idx_test(i1):end);% start from nonzero index
-        if(length(y)>m+n)
-            [theta,bias,~,~]=my_arma(y,m,n);
-            p=my_predict(theta,bias,n,y(end-m+1:end));
-            predict_arma_test(i1,store_idx)=sum(p);
-        else
-            if ~isempty(y)
-                predict_arma_test(i1,store_idx)=median(y);
-            else
-                predict_arma_test(i1,store_idx)=0;
-            end
-        end
+        p=my_predict(theta,bias,n,x_mf_test(i1,end-m+1:end,store_idx)');
+        predict_arma_test(i1,store_idx)=sum(p);
     end
 end
 toc;
 close(wb);
 predict_arma_train(top_k_arma+1:1000,:)=predict_median_train(top_k_arma+1:1000,:);
 predict_arma_test(top_k_arma+1:1000,:)=predict_median_test(top_k_arma+1:1000,:);
-score_arma_train=calculate_score(predict_arma_train,y_train,config_a,config_b)/scatter;
-score_arma_test=calculate_score(predict_arma_test,y_test,config_a,config_b)/scatter;
+score_arma_train=calculate_score(predict_arma_train,y_train,config_a,config_b)/scale;
+score_arma_test=calculate_score(predict_arma_test,y_test,config_a,config_b)/scale;
 %% 融合两种结果：
-lambda=0.9;
+lambda=0.8;
 predict_esemble_train=lambda*predict_median_train+(1-lambda)*predict_arma_train;
 predict_esemble_test=lambda*predict_median_test+(1-lambda)*predict_arma_test;
-score_esemble_train=calculate_score(predict_esemble_train,y_train,config_a,config_b)/scatter;
-score_esemble_test=calculate_score(predict_esemble_test,y_test,config_a,config_b)/scatter;
+score_esemble_train=calculate_score(predict_esemble_train,y_train,config_a,config_b)/scale;
+score_esemble_test=calculate_score(predict_esemble_test,y_test,config_a,config_b)/scale;
 %% 比较误差
-cost_median_train=calculate_score_seperate(y_train,predict_median_train,config_a,config_b);
-cost_median_test=calculate_score_seperate(y_test,predict_median_test,config_a,config_b);
-cost_arma_train=calculate_score_seperate(y_train,predict_arma_train,config_a,config_b);
-cost_arma_test=calculate_score_seperate(y_test,predict_arma_test,config_a,config_b);
-
+cost_median_train=calculate_score_seperate(predict_median_train,y_train,config_a,config_b);
+cost_median_test=calculate_score_seperate(predict_median_test,y_test,config_a,config_b);
+cost_arma_train=calculate_score_seperate(predict_arma_train,y_train,config_a,config_b);
+cost_arma_test=calculate_score_seperate(predict_arma_test,y_test,config_a,config_b);
+% sum(sum(cost_median_train))
 %item
 idx=1:1000;
 figure;
@@ -257,15 +243,10 @@ plot(idx,sum(cost_median_test,2),idx,sum(cost_arma_test,2));
 legend('median','arma');
 title('test');xlabel('item');ylabel('cost');
 %}
-%% 考察周期性
-item=1;
-store=6;
-data=item_dt_target(item,:,store);
-figure;
-plot(data);
+%% 一年前的今天乘以一定的比例系数作为今天的预测（适用的item有限）
+%{
 last_k=10;
 lambda=0.3;
-%% 一年前的今天乘以一定的比例系数作为今天的预测（适用的item有限）
 % 找出去年有售的item
 select_train=repmat(begin_idx_train<=(length(x_idx_train)-364-last_k),1,6);
 % 去年target销量/去年target前k天销量*今年target前k天销量
@@ -281,7 +262,7 @@ predict_period_train(isnan(temp)|isinf(temp),:)=0;
 select_train(isnan(temp)|isinf(temp))=false;
 predict_esemble_train=lambda*predict_median_train+...
     (1-lambda)*(predict_period_train.*select_train+predict_median_train.*(~select_train));
-score_esemble_train=calculate_score(predict_esemble_train,y_train,config_a,config_b)/scatter;
+score_esemble_train=calculate_score(predict_esemble_train,y_train,config_a,config_b)/scale;
 
 % 找出去年有售的item
 select_test=repmat(begin_idx_test<=(length(x_idx_test)-364-last_k),1,6);
@@ -298,7 +279,7 @@ predict_period_test(isnan(temp)|isinf(temp),:)=0;
 select_test(isnan(temp)|isinf(temp))=false;
 predict_esemble_test=lambda*predict_median_test+...
     (1-lambda)*(predict_period_test.*select_test+predict_median_test.*(~select_test));
-score_esemble_test=calculate_score(predict_esemble_test,y_test,config_a,config_b)/scatter;
-
+score_esemble_test=calculate_score(predict_esemble_test,y_test,config_a,config_b)/scale;
+%}
 
 
