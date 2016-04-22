@@ -18,7 +18,8 @@ lr=1e-1;
 lambda=1e-3;  %regularization
 max_g=1;
 % data process
-y=max(y0,ones(size(y0)));
+% y=max(y0,ones(size(y0)));
+y=y0;
 scatter=max(1,mean(y0));
 y=y/scatter;
 theta=normrnd(0,0.01,[m,1]);%zeros(m+1,1);

@@ -102,7 +102,7 @@ plot(last_k,score_median_k_test,'--*');
 title('test');xlabel('last k day');ylabel('cost');grid;
 %}
 %% 尝试 median filter
-%
+%{
 data1=item_dt_target(1,:,1)';
 data2=medfilt1(data1,3);
 figure;
@@ -173,6 +173,34 @@ plot(x_idx_test(end-m+1:end),x_mf_test(i1,end-m+1:end,store_idx),...
     y_idx_test,p);
 legend('x','y','predict');
 %}
+%% 对每个分仓训练同一模型,对最近m天销量自回归，n步预测值求和作为预测
+%
+filter_window=3; %中位数滤波窗口
+m=100; % 模型阶次
+sample_range=1:400;
+i1=1; %样本点
+store_idx=2; %仓库
+n=length(y_idx_train);
+
+x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
+y=[x_mf_train(sample_range,end-m+1:end,store_idx)';item_dt_target(sample_range,y_idx_train,store_idx)'];
+[theta,bias,scale_arma,L]=my_arma_2(y,m,n);
+p=my_predict(theta,bias*scale_arma(i1),n,x_mf_train(i1,end-m+1:end,store_idx)');
+figure;plot(L);
+figure;
+plot(x_idx_train(end-m+1:end),x_mf_train(i1,end-m+1:end,store_idx),...
+    y_idx_train,item_dt_target(i1,y_idx_train,store_idx),...
+    y_idx_train,p);
+legend('x','y','predict');
+
+x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
+p=my_predict(theta,bias*scale_arma(i1),n,x_mf_test(i1,end-m+1:end,store_idx)');
+figure;
+plot(x_idx_test(end-m+1:end),x_mf_test(i1,end-m+1:end,store_idx),...
+    y_idx_test,item_dt_target(i1,y_idx_test,store_idx),...
+    y_idx_test,p);
+legend('x','y','predict');
+%}
 %% 比较不同模型在各个维度上的预测误差：item、begin_time、store_id、brand、supplier
 % 前8天中值滤波
 last_k=8;
@@ -190,7 +218,7 @@ filter_window    m    train    test
       1          20   153.43   159.43
       1          10   209.20   151.88
 %}
-top_k_arma=200;
+top_k_arma=400;
 predict_arma_train=zeros(1000,6);
 predict_arma_test=zeros(1000,6);
 filter_window=3; %中位数滤波窗口

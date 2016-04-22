@@ -45,22 +45,22 @@ idx_f=24;
 %}
 %% 分析趋势和相关性
 %
-item_id=4;
+item_id=1;
 store_id=1;
-feature_id=24;
+feature_id=2;
 data=item_data(:,:,store_id,item_id);
-% figure;
-% subplot(211);
-% plot(1:444,data(:,end-1));
-% subplot(212);
-% plot(1:444,data(:,feature_id));
-
-range1=400:437;
-range2=y_idx_test;
 figure;
-plot(range1,data(range1,feature_id),'--b*',range2,data(range2,feature_id),'ro');
-title(num2str(scale_regress*target(store_id,item_id)));
-x=data(433:437,feature_id)/scale_base(store_id,item_id);
-[p,S]=polyfit(1:length(x),x',1);
+subplot(211);
+plot(1:444,log(1+data(:,end-1)));title('目标24');
+subplot(212);
+plot(1:444,log(1+data(:,feature_id)));title(num2str(feature_id));
+
+% range1=400:437;
+% range2=y_idx_test;
+% figure;
+% plot(range1,data(range1,feature_id),'--b*',range2,data(range2,feature_id),'ro');
+% title(num2str(scale_regress*target(store_id,item_id)));
+% x=data(433:437,feature_id)/scale_base(store_id,item_id);
+% [p,S]=polyfit(1:length(x),x',1);
 %}
 
