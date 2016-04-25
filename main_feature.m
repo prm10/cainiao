@@ -25,7 +25,7 @@ top_k=400;
 % hist(target(4,1:top_k),100);
 target=target(:,1:top_k);
 %% 看分布
-%
+%{
 idx_f=24;
 %     f1=squeeze(mean(x_test(end-6:end,idx_f,:,1:top_k),1));
 %     f1=squeeze(sum(x_test(:,idx_f,:,1:top_k),1));
@@ -44,7 +44,7 @@ idx_f=24;
 
 %}
 %% 分析趋势和相关性
-%
+%{
 item_id=1;
 store_id=1;
 feature_id=2;
@@ -54,7 +54,7 @@ subplot(211);
 plot(1:444,log(1+data(:,end-1)));title('目标24');
 subplot(212);
 plot(1:444,log(1+data(:,feature_id)));title(num2str(feature_id));
-
+%
 % range1=400:437;
 % range2=y_idx_test;
 % figure;
@@ -63,4 +63,18 @@ plot(1:444,log(1+data(:,feature_id)));title(num2str(feature_id));
 % x=data(433:437,feature_id)/scale_base(store_id,item_id);
 % [p,S]=polyfit(1:length(x),x',1);
 %}
+%% 长度为14的均值滑窗
+filter_window=7; %中位数滤波窗口
+item_id=3; %样本点
+store_id=1; %仓库
+remove_len=floor((filter_window-1)/2);
+data1=target_flow(:,store_id,item_id);
+data2=smooth(data1,filter_window);
+% data2=log(1+data2(1:end-remove_len));
+data2=log(1+data1);
+figure;
+subplot(211);
+plot(1:length(data1),data1,'--*');
+subplot(212);
+plot(1:length(data2),data2,'--*');
 
