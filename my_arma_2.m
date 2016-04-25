@@ -14,7 +14,7 @@ S 用第N-n-m+1~N-n个，预测N-n+1~N的n步预测值
 L 每次循环的模型误差 
 %}
 % parameters:
-loops=1000;
+loops=500;
 lr=1e-2;
 lambda=0;  %regularization
 max_g=1;
@@ -52,7 +52,7 @@ for i1=1:loops
         L(i1)=L(i1)+L1/batch;
     end
     theta=theta-lr*clump((lambda*theta+grad_theta),max_g);
-    bias=bias-lr*clump((lambda*bias+grad_bias),max_g);
+    bias=bias-lr*clump(grad_bias,max_g);
 %     theta_history(i1,:)=theta;
 end
 % bias=bias*scale; % scale the parameters back

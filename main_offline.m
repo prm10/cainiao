@@ -117,10 +117,10 @@ plot(1:size(data2,1),data2);
 filter_window=3; %中位数滤波窗口
 m=20; % 模型阶次
 i1=13; %样本点
-store_idx=1; %仓库
+store_id=1; %仓库
 
 x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
-y=x_mf_train(i1,:,store_idx)';
+y=x_mf_train(i1,:,store_id)';
 y=y(begin_idx_train(i1):end);
 n=length(y_idx_train);
 [theta,bias,~,L]=my_arma(y,m,n);
@@ -128,22 +128,22 @@ p=my_predict(theta,bias,n,y(end-m+1:end));
 figure;plot(L);
 figure;
 % 真实值
-% plot(train_x_idx,train_x(i1,:,store_idx),train_y_idx,item_dt_target(i1,train_y_idx,store_idx),train_y_idx,p);
+% plot(train_x_idx,train_x(i1,:,store_id),train_y_idx,item_dt_target(i1,train_y_idx,store_id),train_y_idx,p);
 % 滤波后的值
-plot(x_idx_train(begin_idx_train(i1):end),y,y_idx_train,item_dt_target(i1,y_idx_train,store_idx),y_idx_train,p);
+plot(x_idx_train(begin_idx_train(i1):end),y,y_idx_train,item_dt_target(i1,y_idx_train,store_id),y_idx_train,p);
 legend('x','y','predict');
 
 x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
-y=x_mf_test(i1,:,store_idx)';
+y=x_mf_test(i1,:,store_id)';
 y=y(begin_idx_test(i1):end);%
 n=length(y_idx_test);
 [theta,bias,S,L]=my_arma(y,m,n);
 p=my_predict(theta,bias,n,y(end-m+1:end));
 figure;
 % 真实值
-% plot(test_x_idx,test_x(i1,:,store_idx),test_y_idx,item_dt_target(i1,test_y_idx,store_idx),test_y_idx,p);
+% plot(test_x_idx,test_x(i1,:,store_id),test_y_idx,item_dt_target(i1,test_y_idx,store_id),test_y_idx,p);
 % 滤波后的值
-plot(x_idx_test(begin_idx_test(i1):end),y,y_idx_test,item_dt_target(i1,y_idx_test,store_idx),y_idx_test,p);
+plot(x_idx_test(begin_idx_test(i1):end),y,y_idx_test,item_dt_target(i1,y_idx_test,store_id),y_idx_test,p);
 legend('x','y','predict');
 %}
 %% 先中值滤波，再对最近m天销量自回归，n步预测值求和作为预测
@@ -151,53 +151,57 @@ legend('x','y','predict');
 filter_window=3; %中位数滤波窗口
 m=40; % 模型阶次
 i1=3; %样本点
-store_idx=1; %仓库
+store_id=1; %仓库
 n=length(y_idx_train);
 
 x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
-y=[x_mf_train(i1,end-m+1:end,store_idx)';item_dt_target(i1,y_idx_train,store_idx)'];
+y=[x_mf_train(i1,end-m+1:end,store_id)';item_dt_target(i1,y_idx_train,store_id)'];
 [theta,bias,~,L]=my_arma(y,m,n);
-p=my_predict(theta,bias,n,x_mf_train(i1,end-m+1:end,store_idx)');
+p=my_predict(theta,bias,n,x_mf_train(i1,end-m+1:end,store_id)');
 figure;plot(L);
 figure;
-plot(x_idx_train(end-m+1:end),x_mf_train(i1,end-m+1:end,store_idx),...
-    y_idx_train,item_dt_target(i1,y_idx_train,store_idx),...
+plot(x_idx_train(end-m+1:end),x_mf_train(i1,end-m+1:end,store_id),...
+    y_idx_train,item_dt_target(i1,y_idx_train,store_id),...
     y_idx_train,p);
 legend('x','y','predict');
 
 x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
-p=my_predict(theta,bias,n,x_mf_test(i1,end-m+1:end,store_idx)');
+p=my_predict(theta,bias,n,x_mf_test(i1,end-m+1:end,store_id)');
 figure;
-plot(x_idx_test(end-m+1:end),x_mf_test(i1,end-m+1:end,store_idx),...
-    y_idx_test,item_dt_target(i1,y_idx_test,store_idx),...
+plot(x_idx_test(end-m+1:end),x_mf_test(i1,end-m+1:end,store_id),...
+    y_idx_test,item_dt_target(i1,y_idx_test,store_id),...
     y_idx_test,p);
 legend('x','y','predict');
 %}
 %% 对每个分仓训练同一模型,对最近m天销量自回归，n步预测值求和作为预测
-%
-filter_window=3; %中位数滤波窗口
-m=100; % 模型阶次
+%{
+filter_window=1; %中位数滤波窗口
+m=35; % 模型阶次
 sample_range=1:400;
-i1=1; %样本点
-store_idx=2; %仓库
+i1=2; %样本点
+store_id=2; %仓库
 n=length(y_idx_train);
 
+remove_len=floor((filter_window-1)/2);
 x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
-y=[x_mf_train(sample_range,end-m+1:end,store_idx)';item_dt_target(sample_range,y_idx_train,store_idx)'];
+x_mf_train=x_mf_train(:,1:end-remove_len,:);
+x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
+x_mf_test=x_mf_test(:,1:end-remove_len,:);
+
+y=[x_mf_train(sample_range,end-m+1:end,store_id)';item_dt_target(sample_range,y_idx_train,store_id)'];
 [theta,bias,scale_arma,L]=my_arma_2(y,m,n);
-p=my_predict(theta,bias*scale_arma(i1),n,x_mf_train(i1,end-m+1:end,store_idx)');
+p=my_predict(theta,bias*scale_arma(i1),n,x_mf_train(i1,end-m+1:end,store_id)');
 figure;plot(L);
 figure;
-plot(x_idx_train(end-m+1:end),x_mf_train(i1,end-m+1:end,store_idx),...
-    y_idx_train,item_dt_target(i1,y_idx_train,store_idx),...
+plot(x_idx_train(end-m+1:end),x_mf_train(i1,end-m+1:end,store_id),...
+    y_idx_train,item_dt_target(i1,y_idx_train,store_id),...
     y_idx_train,p);
 legend('x','y','predict');
 
-x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
-p=my_predict(theta,bias*scale_arma(i1),n,x_mf_test(i1,end-m+1:end,store_idx)');
+p=my_predict(theta,bias*scale_arma(i1),n,x_mf_test(i1,end-m+1:end,store_id)');
 figure;
-plot(x_idx_test(end-m+1:end),x_mf_test(i1,end-m+1:end,store_idx),...
-    y_idx_test,item_dt_target(i1,y_idx_test,store_idx),...
+plot(x_idx_test(end-m+1:end),x_mf_test(i1,end-m+1:end,store_id),...
+    y_idx_test,item_dt_target(i1,y_idx_test,store_id),...
     y_idx_test,p);
 legend('x','y','predict');
 %}
@@ -218,37 +222,55 @@ filter_window    m    train    test
       1          20   153.43   159.43
       1          10   209.20   151.88
 %}
-top_k_arma=400;
+top_k_arma=100;
 predict_arma_train=zeros(1000,6);
 predict_arma_test=zeros(1000,6);
 filter_window=3; %中位数滤波窗口
-m=30; % 模型阶次
+m=60; % 模型阶次
 n=length(y_idx_train); % n步预测
+
+remove_len=floor((filter_window-1)/2);
 x_mf_train=medfilt1(x_train,filter_window,size(x_train,2),2);
+x_mf_train=x_mf_train(:,1:end-remove_len,:);
 x_mf_test=medfilt1(x_test,filter_window,size(x_test,2),2);
-%
+x_mf_test=x_mf_test(:,1:end-remove_len,:);
+
+%{
 wb=waitbar(0,'进度: 0%');
 tic;
 for i1=1:top_k_arma %样本点
     waitbar(i1/top_k_arma,wb,strcat('进度: ',num2str(i1/top_k_arma*100),'%'));
-    for store_idx=1:6 %仓库
+    for store_id=1:6 %仓库
         %train
-        y=[x_mf_train(i1,end-m+1:end,store_idx)';item_dt_target(i1,y_idx_train,store_idx)'];
+        y=[x_mf_train(i1,end-m+1:end,store_id)';item_dt_target(i1,y_idx_train,store_id)'];
         [theta,bias,~,~]=my_arma(y,m,n);
-%         p=my_predict(theta,bias,n,x_mf_train(i1,end-m+1:end,store_idx)');
+%         p=my_predict(theta,bias,n,x_mf_train(i1,end-m+1:end,store_id)');
         %test
-        p=my_predict(theta,bias,n,x_mf_test(i1,end-m+1:end,store_idx)');
-        predict_arma_test(i1,store_idx)=sum(p);
+        p=my_predict(theta,bias,n,x_mf_test(i1,end-m+1:end,store_id)');
+        predict_arma_test(i1,store_id)=sum(p);
     end
 end
 toc;
 close(wb);
+%}
+sample_range=1:top_k_arma;
+for store_id=1:6
+    y=[x_mf_train(sample_range,end-m+1:end,store_id)';item_dt_target(sample_range,y_idx_train,store_id)'];
+    [theta,bias,scale_arma,L]=my_arma_2(y,m,n);
+    for i1=1:top_k_arma
+        p=my_predict(theta,bias*scale_arma(i1),n,x_mf_train(i1,end-m+1:end,store_id)');
+        predict_arma_train(i1,store_id)=sum(p);
+        p=my_predict(theta,bias*scale_arma(i1),n,x_mf_test(i1,end-m+1:end,store_id)');
+        predict_arma_test(i1,store_id)=sum(p);
+    end
+end
+%%
 predict_arma_train(top_k_arma+1:1000,:)=predict_median_train(top_k_arma+1:1000,:);
 predict_arma_test(top_k_arma+1:1000,:)=predict_median_test(top_k_arma+1:1000,:);
 score_arma_train=calculate_score(predict_arma_train,y_train,config_a,config_b)/scale;
 score_arma_test=calculate_score(predict_arma_test,y_test,config_a,config_b)/scale;
 %% 融合两种结果：
-lambda=0.8;
+lambda=0.9;
 predict_esemble_train=lambda*predict_median_train+(1-lambda)*predict_arma_train;
 predict_esemble_test=lambda*predict_median_test+(1-lambda)*predict_arma_test;
 score_esemble_train=calculate_score(predict_esemble_train,y_train,config_a,config_b)/scale;

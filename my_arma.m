@@ -40,7 +40,7 @@ for i1=1:loops
     S=my_predict(theta,bias,n,y1);
     [grad_theta,grad_bias,L(i1)]=my_gradient(S,T,y1,theta);
     theta=theta-lr*clump((lambda*theta+grad_theta),max_g);
-    bias=bias-lr*clump((lambda*bias+grad_bias),max_g);
+    bias=bias-lr*clump(grad_bias,max_g);
 %     theta_history(i1,:)=theta;
 end
 bias=bias*scatter; % scatter the parameters back
