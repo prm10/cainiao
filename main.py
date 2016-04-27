@@ -14,4 +14,6 @@ ec.load_all()
 # data_loader.get_item_store_feature_mat(ec)
 # data_loader.get_config_mat(ec)
 
+#查看日期序号
+# data_loader.date_idx('20151111')+1
 generateResult.mat2csv(ec)

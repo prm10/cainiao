@@ -1,7 +1,7 @@
 clc;close all;clear;
 load('data/cainiao.mat');
 % item_info=zeros(4,1000);% cate_id,cate_level_id,brand_id,supplier_id
-% item_data=zeros(444,25,6,1000);% ds,feature,store_id+1,item_id
+% item_data=zeros(443,25,6,1000);% ds,feature,store_id+1,item_id
 %% 建立训练集和测试集
 x_idx_train=1:430;
 y_idx_train=431:437;
