@@ -12,9 +12,7 @@ len=length(y_idx_train);
 scale=1e4;
 scale_regress=8;
 target_flow=squeeze(item_data(:,24,:,:));
-% x_train=item_data(x_idx_train,:,:,:);
 y_train=squeeze(sum(target_flow(y_idx_train,:,:),1));
-% x_test=item_data(x_idx_test,:,:,:);
 y_test=squeeze(sum(target_flow(y_idx_test,:,:),1));
 
 x_test=item_data(x_idx_test(end-len+1:end),:,:,:);
