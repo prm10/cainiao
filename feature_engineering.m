@@ -23,6 +23,19 @@ for item_id=1:1000
         end
     end
 end
+%% 看排名
+%{
+item_id=3;
+store_id=1;
+feature_id=24;
+data1=item_data(:,24,store_id,item_id);
+data2=rank_data(:,feature_id,store_id,item_id);
+figure;
+subplot(211);
+plot(1:444,data1);title('目标24');
+subplot(212);
+plot(1:444,data2);title('排名');
+%}
 %% 训练集
 %时间序号
 x_idx_train=430:433;
@@ -48,14 +61,15 @@ y_test=squeeze(sum(target_flow(y_idx_test,:,:),1));
 target_test=(y_test-x_test)/len_test;
 target_test=target_test(:,1:top_k);
 %% 特征工程 训练集
-% for idx_f=1:25
-    f_train=repmat(x_idx_train(end)-begin_ds(1:top_k)',6,1);
-    f_test=repmat(x_idx_test(end)-begin_ds(1:top_k)',6,1);
+for feature_id=1:25
+    %最后k天的排名均值和方差
+    f_train=squeeze(std(rank_data(x_idx_train,feature_id,:,1:top_k)));
+    f_test=squeeze(std(rank_data(x_idx_test,feature_id,:,1:top_k)));
     %% 看分布
     figure;
     plot(f_train(:),target_train(:),'b.',f_test(:),target_test(:),'g.',[0,max(f_test(:))],[0,0],'r--');
     legend('train','test');
-% end
+end
 
 % 4天训练集结果与7天测试集结果的关系
 % figure;

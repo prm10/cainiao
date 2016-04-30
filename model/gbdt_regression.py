@@ -31,7 +31,7 @@ def get_data_from_mat(online):
 class ModelClass:
 	def __init__(self,online):
 		self.param = {
-			'max_depth': 8,
+			'max_depth': 15,
 			'eta': 0.1,
 			# 'subsample': 1,
 			'min_child_weight': 20,
